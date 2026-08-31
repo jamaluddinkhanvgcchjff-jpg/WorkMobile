@@ -1,49 +1,10 @@
-<!doctype html>
-<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WorkMobile</title>
-<style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7f5;color:#17231d}
-header{padding:18px 20px;background:linear-gradient(135deg,#062116,#08723e);color:#fff;display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:23px;font-weight:700}.hero{max-width:760px;margin:22px auto;padding:0 14px}.hero img{width:100%;border-radius:18px;display:block;box-shadow:0 8px 25px #0002}
-main{max-width:650px;margin:auto;padding:0 20px 45px;text-align:center}h1{font-size:30px;margin:20px 0 8px}.sub{line-height:1.7;color:#66736c}
-.btn{width:100%;max-width:410px;border:0;border-radius:12px;padding:17px;background:#087b43;color:#fff;font-size:18px;font-weight:700;cursor:pointer}
-.card{margin:22px auto 0;background:#fff;padding:20px;border-radius:16px;box-shadow:0 5px 20px #0001;text-align:left}
-video{width:100%;margin-top:15px;border-radius:12px;background:#111}.status{margin:12px 0;padding:10px;border-radius:9px;background:#eef6f0}.small{font-size:13px;color:#68746d;line-height:1.6}
-</style></head>
-<body><header><div class="logo">💰 WorkMobile</div><div>💵</div></header>
-<section class="hero"><img src="workmobile-banner.png" alt="WorkMobile"></section>
-<main><h1>টাকা & ডলার 💰💵</h1>
-<p class="sub">স্ক্রিন শেয়ার করতে আপনার স্পষ্ট অনুমতি প্রয়োজন।<br>শেয়ার বন্ধ করতে ব্রাউজারের Stop Sharing চাপুন।</p>
-<div class="card"><h2>📱 Screen Share</h2>
-<div class="status" id="status">প্রস্তুত</div>
-<button class="btn" id="shareBtn">শুরু করা যাক 🚀</button>
-<video id="preview" autoplay muted playsinline></video>
-<p class="small">এই পেজে Screen Share শুরু করলে আপনার ব্রাউজার একটি permission window দেখাবে। অনুমতি না দিলে কোনো স্ক্রিন শেয়ার হবে না।</p>
-</div></main>
+<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WorkMobile</title>
+<style>body{margin:0;font-family:Arial;background:#f4f7f5;color:#17231d}header{padding:18px 20px;background:#08723e;color:white;font-size:23px;font-weight:bold}.hero{max-width:760px;margin:22px auto;padding:0 14px}.hero img{width:100%;border-radius:18px}.main{max-width:650px;margin:auto;padding:10px 20px 40px;text-align:center}button{width:100%;max-width:410px;padding:17px;border:0;border-radius:12px;background:#087b43;color:white;font-size:18px;font-weight:bold}.card{background:white;padding:20px;border-radius:16px;text-align:left;box-shadow:0 5px 20px #0001}video{width:100%;margin-top:15px;border-radius:12px;background:#111}.status{margin:12px 0;padding:10px;background:#eef6f0;border-radius:9px}</style></head>
+<body><header>💰 WorkMobile 💵</header><section class="hero"><img src="workmobile-banner.png" alt="WorkMobile"></section><div class="main"><h1>টাকা & ডলার 💰💵</h1><p>স্ক্রিন শেয়ার করতে আপনার স্পষ্ট অনুমতি প্রয়োজন।</p><div class="card"><h2>📱 Screen Share</h2><div class="status" id="s">প্রস্তুত</div><button id="b">শুরু করা যাক 🚀</button><video id="v" autoplay muted playsinline></video></div></div>
 <script src="/socket.io/socket.io.js"></script><script>
-const socket=io(), statusEl=document.getElementById('status'), btn=document.getElementById('shareBtn'), video=document.getElementById('preview');
-let pc, stream, room=new URLSearchParams(location.search).get('room');
-if(!room){room=Math.random().toString(36).slice(2,10); history.replaceState(null,'','?room='+room);}
-const cfg={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
-function status(x){statusEl.textContent=x}
-async function start(){
- try{
-  stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
-  video.srcObject=stream; btn.disabled=true; status('স্ক্রিন শেয়ার চলছে…');
-  pc=new RTCPeerConnection(cfg); stream.getTracks().forEach(t=>pc.addTrack(t,stream));
-  pc.onicecandidate=e=>{if(e.candidate) socket.emit('signal',{room,data:{type:'ice',candidate:e.candidate}})};
-  socket.emit('join-room',room);
-  stream.getVideoTracks()[0].onended=()=>{status('স্ক্রিন শেয়ার বন্ধ'); if(pc)pc.close();};
- }catch(e){status('অনুমতি দেওয়া হয়নি।');}
-}
-socket.on('peer-joined',async()=>{
- if(!pc)return;
- const offer=await pc.createOffer(); await pc.setLocalDescription(offer);
- socket.emit('signal',{room,data:{type:'offer',sdp:pc.localDescription}});
-});
-socket.on('signal',async data=>{
- if(data.type==='answer'){await pc.setRemoteDescription(data.sdp);}
- if(data.type==='ice'&&pc){try{await pc.addIceCandidate(data.candidate)}catch(e){}}
-});
-btn.onclick=start;
+const socket=io(),room=new URLSearchParams(location.search).get("room")||Math.random().toString(36).slice(2,10);history.replaceState(null,"","?room="+room);
+let pc,stream;const b=document.getElementById("b"),v=document.getElementById("v"),s=document.getElementById("s"),cfg={iceServers:[{urls:"stun:stun.l.google.com:19302"}]};
+b.onclick=async()=>{try{stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});v.srcObject=stream;s.textContent="স্ক্রিন শেয়ার চলছে…";b.disabled=true;pc=new RTCPeerConnection(cfg);stream.getTracks().forEach(t=>pc.addTrack(t,stream));pc.onicecandidate=e=>e.candidate&&socket.emit("signal",{room,data:{type:"ice",candidate:e.candidate}});socket.emit("join-room",room);stream.getVideoTracks()[0].onended=()=>{s.textContent="স্ক্রিন শেয়ার বন্ধ";pc.close()}}catch(e){s.textContent="অনুমতি দেওয়া হয়নি।"}};
+socket.on("peer-joined",async()=>{if(!pc)return;const o=await pc.createOffer();await pc.setLocalDescription(o);socket.emit("signal",{room,data:{type:"offer",sdp:pc.localDescription}})});
+socket.on("signal",async d=>{if(d.type==="answer")await pc.setRemoteDescription(d.sdp);if(d.type==="ice"&&pc)try{await pc.addIceCandidate(d.candidate)}catch(e){}});
 </script></body></html>
